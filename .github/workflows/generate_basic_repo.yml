@@ -33,6 +33,10 @@ jobs:
   create-project:
     runs-on: ubuntu-latest
     steps:
+    - name: Configure git credentials for private template repo
+      run: |
+        git config --global url."https://${{ secrets.OPD_ORG_ACTIONS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
     - name: Generate project from OPD template
       uses: andrewthetechie/gha-cookiecutter@main
       with:
@@ -59,17 +63,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.OPD_ORG_ACTIONS_TOKEN }}
       run: |
-        # Clone the empty repository with auth token
         git clone "https://${{ secrets.OPD_ORG_ACTIONS_TOKEN }}@github.com/OxfordPD/${{ github.event.inputs.repository_name }}.git"
 
-        # Find the generated project directory dynamically
         PROJECT_DIR=$(ls -d */ | grep -v "${{ github.event.inputs.repository_name }}/" | head -1 | tr -d '/')
         echo "=== Found project dir: $PROJECT_DIR ==="
 
-        # Copy generated files into the cloned repo
         cp -r "$PROJECT_DIR/." "${{ github.event.inputs.repository_name }}/"
 
-        # Commit and push
         cd "${{ github.event.inputs.repository_name }}"
         git config user.name "${{ github.event.inputs.author_name }}"
         git config user.email "${{ github.event.inputs.author_email }}"
