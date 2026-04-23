@@ -1,0 +1,78 @@
+name: Create basic OPD Project Repo
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Project Name'
+        required: true
+        type: string
+      repository_name:
+        description: 'Repository Name'
+        required: true
+        type: string
+      author_name:
+        description: 'Author Name'
+        required: true
+        type: string
+      author_email:
+        description: 'Author Email'
+        required: true
+        type: string
+      description:
+        description: 'Project Description'
+        required: true
+        type: string
+        default: 'OPD project'
+      python_requires:
+        description: 'Minimum Version of Python to be supported'
+        required: true
+        type: string
+        default: '3.10'
+
+jobs:
+  create-project:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Generate project from OPD template
+      uses: andrewthetechie/gha-cookiecutter@main
+      with:
+        template: gh:OxfordPD/opd_project_template
+        outputDir: .
+        cookiecutterValues: |
+          {
+            "project_name": "${{ github.event.inputs.project_name }}",
+            "author_name": "${{ github.event.inputs.author_name }}",
+            "author_email": "${{ github.event.inputs.author_email }}",
+            "description": "${{ github.event.inputs.description }}",
+            "python_requires": "${{ github.event.inputs.python_requires }}"
+          }
+
+    - name: Create GitHub repository
+      env:
+        GITHUB_TOKEN: ${{ secrets.OPD_ORG_ACTIONS_TOKEN }}
+      run: |
+        gh repo create "OxfordPD/${{ github.event.inputs.repository_name }}" \
+          --description "${{ github.event.inputs.description }}" \
+          --private
+
+    - name: Push files to new repository
+      env:
+        GITHUB_TOKEN: ${{ secrets.OPD_ORG_ACTIONS_TOKEN }}
+      run: |
+        # Clone the empty repository with auth token
+        git clone "https://${{ secrets.OPD_ORG_ACTIONS_TOKEN }}@github.com/OxfordPD/${{ github.event.inputs.repository_name }}.git"
+
+        # Find the generated project directory dynamically
+        PROJECT_DIR=$(ls -d */ | grep -v "${{ github.event.inputs.repository_name }}/" | head -1 | tr -d '/')
+        echo "=== Found project dir: $PROJECT_DIR ==="
+
+        # Copy generated files into the cloned repo
+        cp -r "$PROJECT_DIR/." "${{ github.event.inputs.repository_name }}/"
+
+        # Commit and push
+        cd "${{ github.event.inputs.repository_name }}"
+        git config user.name "${{ github.event.inputs.author_name }}"
+        git config user.email "${{ github.event.inputs.author_email }}"
+        git add .
+        git commit -m "Initial commit from github action workflow to create blank project for ${{ github.event.inputs.project_name }}"
+        git push
