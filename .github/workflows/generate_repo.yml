@@ -1,4 +1,4 @@
-name: Create Templated Repo
+name: Create odin-control Adapter Repo
 on:
   workflow_dispatch:
     inputs:
@@ -37,6 +37,7 @@ jobs:
       uses: andrewthetechie/gha-cookiecutter@main
       with:
         template: gh:stfc-aeg/odin-control-adapter-template
+        outputDir: .
         cookiecutterValues: |
           {
             "project_name": "${{ github.event.inputs.project_name }}",
@@ -60,8 +61,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.OPD_ORG_ACTIONS_TOKEN }}
       run: |
+        # Debug - show what cookiecutter generated
+        echo "=== Working directory contents ==="
+        ls -la
+
         # Derive project_slug the same way cookiecutter does
         PROJECT_SLUG=$(echo "${{ github.event.inputs.project_name }}" | tr '[:upper:]' '[:lower:]' | sed 's/[ _]/-/g')
+        echo "=== Derived PROJECT_SLUG: $PROJECT_SLUG ==="
 
         # Clone the empty repository with auth token
         git clone "https://${{ secrets.OPD_ORG_ACTIONS_TOKEN }}@github.com/OxfordPD/${{ github.event.inputs.repository_name }}.git"
