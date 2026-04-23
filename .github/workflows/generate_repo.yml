@@ -61,19 +61,15 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.OPD_ORG_ACTIONS_TOKEN }}
       run: |
-        # Debug - show what cookiecutter generated
-        echo "=== Working directory contents ==="
-        ls -la
-
-        # Derive project_slug the same way cookiecutter does
-        PROJECT_SLUG=$(echo "${{ github.event.inputs.project_name }}" | tr '[:upper:]' '[:lower:]' | sed 's/[ _]/-/g')
-        echo "=== Derived PROJECT_SLUG: $PROJECT_SLUG ==="
-
         # Clone the empty repository with auth token
         git clone "https://${{ secrets.OPD_ORG_ACTIONS_TOKEN }}@github.com/OxfordPD/${{ github.event.inputs.repository_name }}.git"
 
+        # Find the generated project directory dynamically
+        PROJECT_DIR=$(ls -d */ | grep -v "${{ github.event.inputs.repository_name }}/" | head -1 | tr -d '/')
+        echo "=== Found project dir: $PROJECT_DIR ==="
+
         # Copy generated files into the cloned repo
-        cp -r "$PROJECT_SLUG/." "${{ github.event.inputs.repository_name }}/"
+        cp -r "$PROJECT_DIR/." "${{ github.event.inputs.repository_name }}/"
 
         # Commit and push
         cd "${{ github.event.inputs.repository_name }}"
