@@ -1,4 +1,4 @@
-name: Create odin-control Adapter Repo
+name: Create Templated Repo
 on:
   workflow_dispatch:
     inputs:
