@@ -12,7 +12,9 @@ classifiers = [
 ]
 dynamic = ["version"]
 requires-python = ">={{ cookiecutter.python_requires }}"
-dependencies = []
+dependencies = [
+    "numpy>=1.26",
+]
 
 [project.optional-dependencies]
 dev = [

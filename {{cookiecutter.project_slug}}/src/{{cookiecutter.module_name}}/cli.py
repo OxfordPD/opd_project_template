@@ -3,6 +3,8 @@
 import argparse
 import sys
 
+import numpy as np
+
 from . import __version__
 
 
@@ -34,6 +36,12 @@ def main(argv: list[str] | None = None) -> int:
         print("Verbose mode enabled")
 
     print("Hello from {{ cookiecutter.project_name }}!")
+
+    data = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+    print(f"Array: {data}")
+    print(f"Mean:  {np.mean(data):.2f}")
+    print(f"Sum:   {np.sum(data):.2f}")
+
     return 0
 
 
